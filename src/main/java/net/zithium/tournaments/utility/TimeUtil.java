@@ -119,7 +119,7 @@ public class TimeUtil {
                 time = ZonedDateTime.of(LocalDateTime.of(time.toLocalDate(),
                         time.toLocalDate().atStartOfDay().toLocalTime()), zoneId);
                 break;
-            case HOURLY:
+            case HOURLY, RANDOM:
                 time = time.withMinute(0).withSecond(0).withNano(0);
                 break;
         }
@@ -142,6 +142,9 @@ public class TimeUtil {
                 break;
             case HOURLY:
                 time = time.withMinute(59).withSecond(59).withNano(999999999);
+                break;
+            case RANDOM:
+                time = time.withMinute(14).withSecond(59).withNano(999999999);
                 break;
         }
         return time;

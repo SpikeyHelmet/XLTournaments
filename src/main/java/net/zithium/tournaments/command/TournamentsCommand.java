@@ -1,21 +1,31 @@
 package net.zithium.tournaments.command;
 
 import net.zithium.tournaments.XLTournamentsPlugin;
+import net.zithium.tournaments.objective.XLObjective;
 import net.zithium.tournaments.tournament.Tournament;
+import net.zithium.tournaments.tournament.TournamentBuilder;
+import net.zithium.tournaments.tournament.TournamentManager;
 import net.zithium.tournaments.tournament.TournamentStatus;
 import net.zithium.tournaments.config.Messages;
 import me.mattstudios.mf.annotations.*;
 import me.mattstudios.mf.base.CommandBase;
 import net.zithium.tournaments.utility.ColorUtil;
 import net.zithium.tournaments.utility.TextUtil;
+import net.zithium.tournaments.utility.Timeline;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Command("tournament")
@@ -255,8 +265,44 @@ public class TournamentsCommand extends CommandBase {
         Messages.FORCE_JOIN_PLAYER.send(sender, "{PLAYER}", targetPlayer.getName(), "{TOURNAMENT}", tournament.getIdentifier());
     }
 
+    @SubCommand("randomstart")
+    @Permission({"tournaments.admin", "tournaments.command.randomstart"})
+    @WrongUsage("&c/tournament randomstart")
+    @Completion({"#players", "#tournaments"})
+    public void randomStartCommand(final CommandSender sender)
+    {
+        //Start a Random Event from all the configured tournaments
+        TournamentManager tournamentManager = plugin.getTournamentManager();
+        Map<Tournament, Map<String, FileConfiguration>> allTournamentsMap = tournamentManager.getAllTournaments();
+        Iterator<Tournament> iterator = allTournamentsMap.keySet().iterator();
+        ArrayList<Tournament> tournaments = new ArrayList<>();
+        while (iterator.hasNext())
+        {
+            Tournament tournament = iterator.next();
+            if(tournament.getTimeline().equals(Timeline.RANDOM))
+            {
+                tournaments.add(tournament);
+            }
+        }
 
+        Random rand = new Random();
+        Tournament randomSelectedTournament = tournaments.get(rand.nextInt(tournaments.size()));
+        Map<String, FileConfiguration> randomSelectedTournamentData = allTournamentsMap.get(randomSelectedTournament);
+        String identifier = randomSelectedTournamentData.keySet().toString();
+        FileConfiguration config = (FileConfiguration) randomSelectedTournamentData.values().toArray()[0];
 
+        TournamentBuilder tournamentBuilder = tournamentManager.getTournamentBuilder(identifier, config);
+        Tournament tournament = tournamentBuilder.build();
+        XLObjective objective = tournament.getObjective();
+        Logger logger = plugin.getLogger();
+
+        if (!objective.loadTournament(tournament, config)) {
+            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
+            return;
+        }
+
+        tournamentManager.enableTournament(identifier, config);
+    }
 }
 
 

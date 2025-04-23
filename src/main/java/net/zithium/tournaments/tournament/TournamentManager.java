@@ -10,6 +10,7 @@ import net.zithium.tournaments.config.ConfigHandler;
 import net.zithium.tournaments.objective.XLObjective;
 import net.zithium.tournaments.storage.StorageHandler;
 import net.zithium.tournaments.task.TournamentUpdateTask;
+import net.zithium.tournaments.utility.Timeline;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -33,6 +34,7 @@ public class TournamentManager {
 
     private final XLTournamentsPlugin plugin;
     private Map<String, Tournament> tournaments;
+    private Map<Tournament, Map<String, FileConfiguration>> allTournaments;
     private boolean listenersRegistered;
 
     private BukkitTask timerTask;
@@ -40,10 +42,12 @@ public class TournamentManager {
     public TournamentManager(XLTournamentsPlugin plugin) {
         this.plugin = plugin;
         tournaments = new HashMap<>();
+        allTournaments = new HashMap<>();
     }
 
     public void onEnable() {
         tournaments = new HashMap<>();
+        allTournaments = new HashMap<>();
 
         File dataFolder = plugin.getDataFolder();
         File directory = new File(dataFolder.getAbsolutePath() + File.separator + "tournaments");
@@ -180,23 +184,59 @@ public class TournamentManager {
     public void registerTournament(String identifier, FileConfiguration config) {
         if (!config.getBoolean("enabled")) return;
 
+        TournamentBuilder tournamentBuilder = getTournamentBuilder(identifier, config);
+        Tournament tournament = tournamentBuilder.build();
+        XLObjective objective = tournament.getObjective();
+        Logger logger = plugin.getLogger();
+
+        Map<String, FileConfiguration> tournamentData = new LinkedHashMap<>();
+        tournamentData.put(identifier, config);
+        allTournaments.put(tournament, tournamentData);
+        if(tournament.getTimeline().equals(Timeline.RANDOM)) {
+            logger.info("Tournament " + identifier + "skipped being enabled");
+            return;
+        }
+
+        if (!objective.loadTournament(tournament, config)) {
+            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
+            return;
+        }
+
+        enableTournament(identifier, config);
+    }
+
+    public Optional<Tournament> getTournament(String identifier) {
+        return tournaments.values().stream().filter(tournament -> tournament.getIdentifier().equalsIgnoreCase(identifier)).findFirst();
+    }
+
+    public List<Tournament> getTournaments() {
+        return new ArrayList<>(tournaments.values());
+    }
+
+    public Map<Tournament, Map<String, FileConfiguration>> getAllTournaments()
+    {
+        return allTournaments;
+    }
+
+    public TournamentBuilder getTournamentBuilder(String identifier, FileConfiguration config)
+    {
         TournamentBuilder builder = new TournamentBuilder(plugin, identifier);
 
         try {
             builder.loadFromFile(plugin.getObjectiveManager(), config);
         } catch (Exception ex) {
             plugin.getLogger().log(Level.SEVERE, "There was an error while attempting to build the tournament!", ex);
-            return;
+            return null;
         }
+        return builder;
+    }
 
-        Tournament tournament = builder.build();
+    public void enableTournament(String identifier, FileConfiguration config)
+    {
+        TournamentBuilder tournamentBuilder = getTournamentBuilder(identifier, config);
+        Tournament tournament = tournamentBuilder.build();
         XLObjective objective = tournament.getObjective();
         Logger logger = plugin.getLogger();
-
-        if (!objective.loadTournament(tournament, config)) {
-            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
-            return;
-        }
 
         objective.addTournament(tournament);
         tournament.updateStatus();
@@ -208,13 +248,5 @@ public class TournamentManager {
 
         tournaments.put(identifier, tournament);
         logger.info("Loaded '" + identifier + "' tournament.");
-    }
-
-    public Optional<Tournament> getTournament(String identifier) {
-        return tournaments.values().stream().filter(tournament -> tournament.getIdentifier().equalsIgnoreCase(identifier)).findFirst();
-    }
-
-    public List<Tournament> getTournaments() {
-        return new ArrayList<>(tournaments.values());
     }
 }
