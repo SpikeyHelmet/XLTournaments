@@ -16,12 +16,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class PlaceholderAPIObjective extends XLObjective {
 
     private final JavaPlugin JAVA_PLUGIN = JavaPlugin.getProvidingPlugin(XLTournamentsPlugin.class);
     private BukkitTask task;
+    private Map<UUID, Map<String, Integer>> placeholderOffsets;
 
     public PlaceholderAPIObjective() {
         super("PLACEHOLDERAPI");
@@ -30,6 +33,7 @@ public class PlaceholderAPIObjective extends XLObjective {
     @Override
     public boolean loadTournament(Tournament tournament, FileConfiguration config) {
         String objective = config.getString("objective");
+        placeholderOffsets = new HashMap<>();
         if (objective.contains(";")) {
             String placeholder = objective.substring(objective.lastIndexOf(";") + 1).replace("%", "");
             tournament.setMeta("PLACEHOLDER", placeholder);
@@ -52,14 +56,26 @@ public class PlaceholderAPIObjective extends XLObjective {
                 if (tournament.hasMeta("PLACEHOLDER")) {
                     if (!canExecute(tournament, player)) continue;
 
-                    int value;
+                    String placeholder = (String) tournament.getMeta("PLACEHOLDER");
+                    int currentValue;
                     try {
-                        value = Integer.parseInt(PlaceholderAPI.setPlaceholders((OfflinePlayer) player, "%" + tournament.getMeta("PLACEHOLDER") + "%"));
+                        currentValue = Integer.parseInt(PlaceholderAPI.setPlaceholders((OfflinePlayer) player, "%" + placeholder + "%"));
                     } catch (Exception ex) {
                         continue;
                     }
 
-                    tournament.addScore(uuid, value, true);
+                    // Retrieve or initialize the offset map for the player
+                    if(!placeholderOffsets.containsKey(uuid)) {
+                        Map<String, Integer> playerPlaceholder =  new HashMap<>();
+                        playerPlaceholder.put(placeholder, currentValue);
+
+                        placeholderOffsets.put(uuid, playerPlaceholder);
+                    }
+                    Map<String, Integer> playerOffsets = placeholderOffsets.get(uuid);
+                    // Get the previous value (offset) for this placeholder
+                    int offsetValue = playerOffsets.get(placeholder);
+
+                    tournament.addScore(uuid, currentValue - offsetValue, true);
                 }
             }
         }
