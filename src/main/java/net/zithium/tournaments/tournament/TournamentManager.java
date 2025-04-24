@@ -193,7 +193,7 @@ public class TournamentManager {
         tournamentData.put(identifier, config);
         allTournaments.put(tournament, tournamentData);
         if(tournament.getTimeline().equals(Timeline.RANDOM)) {
-            logger.info("Tournament " + identifier + "skipped being enabled");
+            logger.fine("Tournament " + identifier + "skipped being enabled");
             return;
         }
 
@@ -202,7 +202,7 @@ public class TournamentManager {
             return;
         }
 
-        enableTournament(identifier, config);
+        enableTournament(identifier, config, false);
     }
 
     public Optional<Tournament> getTournament(String identifier) {
@@ -231,7 +231,7 @@ public class TournamentManager {
         return builder;
     }
 
-    public void enableTournament(String identifier, FileConfiguration config)
+    public void enableTournament(String identifier, FileConfiguration config, boolean addParticipants)
     {
         TournamentBuilder tournamentBuilder = getTournamentBuilder(identifier, config);
         Tournament tournament = tournamentBuilder.build();
@@ -240,8 +240,12 @@ public class TournamentManager {
 
         objective.addTournament(tournament);
         tournament.updateStatus();
-        if (tournament.getStatus() == TournamentStatus.ACTIVE) {
-            tournament.start(false);
+        tournament.start(false);
+
+        if(addParticipants){
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                tournament.addParticipant(player.getUniqueId(), 0, true);
+            }
         }
 
         plugin.getStorageManager().getStorageHandler().createTournamentTable(identifier);

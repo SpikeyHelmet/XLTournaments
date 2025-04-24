@@ -40,7 +40,10 @@ public class TournamentUpdateTask extends BukkitRunnable {
             if (tournament.getEndTimeMillis() < System.currentTimeMillis()) {
                 tournament.stop();
 
-                if (tournament.getTimeline() != Timeline.SPECIFIC) {
+                if (tournament.getTimeline() == Timeline.RANDOM) {
+                    Bukkit.getScheduler().runTaskLater(JAVA_PLUGIN, ((XLTournamentsPlugin) JAVA_PLUGIN)::reload, 200);
+                }
+                else if (tournament.getTimeline() != Timeline.SPECIFIC) {
                     Bukkit.getScheduler().runTaskLater(JAVA_PLUGIN, () -> {
                         tournament.updateStatus();
                         tournament.start(true);

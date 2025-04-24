@@ -288,7 +288,7 @@ public class TournamentsCommand extends CommandBase {
         Random rand = new Random();
         Tournament randomSelectedTournament = tournaments.get(rand.nextInt(tournaments.size()));
         Map<String, FileConfiguration> randomSelectedTournamentData = allTournamentsMap.get(randomSelectedTournament);
-        String identifier = randomSelectedTournamentData.keySet().toString();
+        String identifier = (String) randomSelectedTournamentData.keySet().toArray()[0];
         FileConfiguration config = (FileConfiguration) randomSelectedTournamentData.values().toArray()[0];
 
         TournamentBuilder tournamentBuilder = tournamentManager.getTournamentBuilder(identifier, config);
@@ -301,7 +301,7 @@ public class TournamentsCommand extends CommandBase {
             return;
         }
 
-        tournamentManager.enableTournament(identifier, config);
+        tournamentManager.enableTournament(identifier, config, true);
     }
 }
 

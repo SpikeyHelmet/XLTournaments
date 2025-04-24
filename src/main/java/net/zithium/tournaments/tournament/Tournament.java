@@ -111,12 +111,12 @@ public class Tournament {
         if (clearParticipants) {
             if (debug()) plugin.getLogger().log(Level.INFO, "Clearing tournament participants.");
             Bukkit.getScheduler().runTaskAsynchronously(plugin, this::clearParticipants);
+        }
 
-            // If there are start actions defined, execute them for all online players.
-            if (!startActions.isEmpty()) {
-                if (debug()) plugin.getLogger().log(Level.INFO, "Executing start actions.");
-                Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, startActions));
-            }
+        // If there are start actions defined, execute them for all online players.
+        if (!startActions.isEmpty()) {
+            if (debug()) plugin.getLogger().log(Level.INFO, "Executing start actions.");
+            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, startActions));
         }
 
         // Set the tournament status to ACTIVE.
@@ -157,6 +157,11 @@ public class Tournament {
 
         Bukkit.getPluginManager().callEvent(new TournamentEndEvent(this, new TournamentData(identifier, gameUniqueId, new LinkedHashMap<>(sortedParticipants))));
 
+        if (!endActions.isEmpty()) {
+            if (debug()) plugin.getLogger().log(Level.INFO, "Executing end actions.");
+            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, endActions));
+        }
+
         if (challenge) return;
 
         for (int position : rewards.keySet()) {
@@ -176,10 +181,6 @@ public class Tournament {
             });
         }
 
-        if (!endActions.isEmpty()) {
-            if (debug()) plugin.getLogger().log(Level.INFO, "Executing end actions.");
-            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, endActions));
-        }
         if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
 
         clearParticipants();
