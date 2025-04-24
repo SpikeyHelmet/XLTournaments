@@ -268,9 +268,14 @@ public class TournamentsCommand extends CommandBase {
     @SubCommand("randomstart")
     @Permission({"tournaments.admin", "tournaments.command.randomstart"})
     @WrongUsage("&c/tournament randomstart")
-    @Completion({"#players", "#tournaments"})
     public void randomStartCommand(final CommandSender sender)
     {
+        if(Bukkit.getOnlinePlayers().isEmpty())
+        {
+            sender.sendMessage(ColorUtil.color("&cNo players online."));
+            return;
+        }
+
         //Start a Random Event from all the configured tournaments
         TournamentManager tournamentManager = plugin.getTournamentManager();
         Map<Tournament, Map<String, FileConfiguration>> allTournamentsMap = tournamentManager.getAllTournaments();
