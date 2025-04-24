@@ -87,13 +87,13 @@ public class TournamentGUI {
                     TournamentStatus status = tournament.getStatus();
                     if (status == TournamentStatus.ACTIVE) {
                         builder = ItemStackBuilder.getItemStack(config.getConfigurationSection(section.getCurrentPath() + "." + entry + ".active"));
-                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".active.lore"), player.getUniqueId(), tournament));
+                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".active.lore"), player, tournament));
                     } else if (status == TournamentStatus.WAITING) {
                         builder = ItemStackBuilder.getItemStack(config.getConfigurationSection(section.getCurrentPath() + "." + entry + ".waiting"));
-                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".waiting.lore"), player.getUniqueId(), tournament));
+                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".waiting.lore"), player, tournament));
                     } else if (status == TournamentStatus.ENDED) {
                         builder = ItemStackBuilder.getItemStack(config.getConfigurationSection(section.getCurrentPath() + "." + entry + ".ended"));
-                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".ended.lore"), player.getUniqueId(), tournament));
+                        builder.withLore(TextUtil.setPlaceholders(config.getStringList(section.getCurrentPath() + "." + entry + ".ended.lore"), player, tournament));
                     }
 
                     GuiItem guiItem = new GuiItem(builder.build());

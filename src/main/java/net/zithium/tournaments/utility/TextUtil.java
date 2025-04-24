@@ -5,10 +5,12 @@
 
 package net.zithium.tournaments.utility;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.zithium.tournaments.XLTournamentsPlugin;
 import net.zithium.tournaments.tournament.Tournament;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -49,19 +51,19 @@ public class TextUtil {
         return builder.toString();
     }
 
-    public static List<String> setPlaceholders(List<String> text, UUID uuid, Tournament tournament) {
+    public static List<String> setPlaceholders(List<String> text, Player player, Tournament tournament) {
         List<String> list = new ArrayList<>();
         for (String line : text) {
-            list.add(setPlaceholders(line, uuid, tournament));
+            list.add(setPlaceholders(line, player, tournament));
         }
         return list;
     }
 
-    public static String setPlaceholders(String text, UUID uuid, Tournament tournament) {
-
+    public static String setPlaceholders(String text, Player player, Tournament tournament) {
+        UUID uuid = player != null ? player.getUniqueId() : null;
         FileConfiguration config = XLTournamentsPlugin.getPlugin(XLTournamentsPlugin.class).getMessagesFile().getConfig();
 
-        text = text.replace("{START_DAY}", tournament.getStartDay())
+        text = uuid != null ? text.replace("{START_DAY}", tournament.getStartDay())
                 .replace("{END_DAY}", tournament.getEndDay())
                 .replace("{START_MONTH}", tournament.getStartMonth())
                 .replace("{START_MONTH_NUMBER}", tournament.getStartMonthNumber())
@@ -72,15 +74,23 @@ public class TextUtil {
                 .replace("{PLAYER_SCORE}", String.valueOf(tournament.getScore(uuid)))
                 .replace("{PLAYER_SCORE_FORMATTED}", TextUtil.getNumberFormatted(tournament.getScore(uuid)))
                 .replace("{PLAYER_SCORE_TIME_FORMATTED}", TimeUtil.formatTime(tournament.getScore(uuid)))
-                .replace("{TIME_REMAINING}", tournament.getTimeRemaining());
+                .replace("{TIME_REMAINING}", tournament.getTimeRemaining())
+                :
+                text.replace("{START_DAY}", tournament.getStartDay())
+                        .replace("{END_DAY}", tournament.getEndDay())
+                        .replace("{START_MONTH}", tournament.getStartMonth())
+                        .replace("{START_MONTH_NUMBER}", tournament.getStartMonthNumber())
+                        .replace("{END_MONTH_NUMBER}", tournament.getEndMonthNumber())
+                        .replace("{END_MONTH}", tournament.getEndMonth())
+                        .replace("{TIME_REMAINING}", tournament.getTimeRemaining());
 
         try {
             final String LEADER_PATTERN = "\\{LEADER_NAME_(\\w+)}";
             final Pattern pattern = Pattern.compile(LEADER_PATTERN);
             final Matcher matcher = pattern.matcher(text);
             while (matcher.find()) {
-                OfflinePlayer player = tournament.getPlayerFromPosition(Integer.parseInt(matcher.group(1)));
-                text = matcher.replaceAll(player != null ? player.getName() : config.getString("placeholders.no_player", "N/A"));
+                OfflinePlayer offlinePlayer = tournament.getPlayerFromPosition(Integer.parseInt(matcher.group(1)));
+                text = matcher.replaceAll(offlinePlayer != null ? offlinePlayer.getName() : config.getString("placeholders.no_player", "N/A"));
             }
         } catch (Exception ignored) {
         }
@@ -115,6 +125,10 @@ public class TextUtil {
         } catch (Exception ignored) {
         }
 
-        return text;
+        return PlaceholderAPI.setPlaceholders(player, text);
+    }
+
+    public static String setPlaceholders(String text, Player player) {
+        return PlaceholderAPI.setPlaceholders(player, text);
     }
 }
