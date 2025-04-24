@@ -190,7 +190,6 @@ public class TournamentsCommand extends CommandBase {
             } else {
                 tournament.stop();
                 tournament.setStatus(TournamentStatus.ENDED);
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, tournament::clearParticipants);
                 Messages.STOPPED_TOURNAMENT.send(sender, "{TOURNAMENT}", tournament.getIdentifier());
             }
         } else {
@@ -301,12 +300,7 @@ public class TournamentsCommand extends CommandBase {
         XLObjective objective = tournament.getObjective();
         Logger logger = plugin.getLogger();
 
-        if (!objective.loadTournament(tournament, config)) {
-            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
-            return;
-        }
-
-        tournamentManager.enableTournament(identifier, config, true);
+        tournamentManager.enableTournament(identifier, config, false);
     }
 }
 

@@ -112,6 +112,11 @@ public class Tournament {
             if (debug()) plugin.getLogger().log(Level.INFO, "Clearing tournament participants.");
             Bukkit.getScheduler().runTaskAsynchronously(plugin, this::clearParticipants);
         }
+        else {
+            for(Player player : Bukkit.getOnlinePlayers()) {
+                addParticipant(player.getUniqueId(), 0, true);
+            }
+        }
 
         // If there are start actions defined, execute them for all online players.
         if (!startActions.isEmpty()) {
@@ -157,33 +162,48 @@ public class Tournament {
 
         Bukkit.getPluginManager().callEvent(new TournamentEndEvent(this, new TournamentData(identifier, gameUniqueId, new LinkedHashMap<>(sortedParticipants))));
 
+        if (challenge) {
+            if (!endActions.isEmpty()) {
+                if (debug()) plugin.getLogger().log(Level.INFO, "Executing end actions.");
+
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    actionManager.executeActions(null, endActions, this);
+                    if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
+
+                    clearParticipants();
+                });
+            }
+        } else {
+            for (int position : rewards.keySet()) {
+                OfflinePlayer player = getPlayerFromPosition(position);
+                if (player != null) {
+                    if (player.isOnline()) {
+                        Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position)));
+                        if (debug()) plugin.getLogger().log(Level.INFO, "Executed end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
+                    } else {
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                            for (String action : rewards.get(position)) {
+                                storageHandler.addActionToQueue(player.getUniqueId().toString(), action);
+                                if (debug()) plugin.getLogger().log(Level.INFO, "Queued end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
         if (!endActions.isEmpty()) {
             if (debug()) plugin.getLogger().log(Level.INFO, "Executing end actions.");
-            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, endActions));
-        }
-
-        if (challenge) return;
-
-        for (int position : rewards.keySet()) {
-            OfflinePlayer player = getPlayerFromPosition(position);
-            if (player == null) continue;
-            if (player.isOnline()) {
-                Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position)));
-                if (debug()) plugin.getLogger().log(Level.INFO, "Executed end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
-                continue;
-            }
-
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                for (String action : rewards.get(position)) {
-                    storageHandler.addActionToQueue(player.getUniqueId().toString(), action);
-                    if (debug()) plugin.getLogger().log(Level.INFO, "Queued end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
-                }
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                actionManager.executeActions(null, endActions, this);
+                if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
+                clearParticipants();
             });
         }
-
-        if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
-
-        clearParticipants();
+        else {
+            if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
+            clearParticipants();
+        }
     }
 
     /**

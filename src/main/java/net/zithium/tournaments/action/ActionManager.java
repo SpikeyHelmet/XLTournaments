@@ -1,10 +1,15 @@
 package net.zithium.tournaments.action;
 
 import net.zithium.tournaments.XLTournamentsPlugin;
-import net.zithium.tournaments.action.actions.*;
+import net.zithium.tournaments.action.actions.BroadcastMessageAction;
+import net.zithium.tournaments.action.actions.CommandAction;
+import net.zithium.tournaments.action.actions.ConsoleCommandAction;
+import net.zithium.tournaments.action.actions.MessageAction;
+import net.zithium.tournaments.action.actions.SoundAction;
 import net.zithium.tournaments.tournament.Tournament;
 import net.zithium.tournaments.utility.TextUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -54,13 +59,41 @@ public class ActionManager {
                     item = item.contains(" ") ? item.split(" ", 2)[1] : "";
                     if (player != null) {
                         item = item.replace("{PLAYER}", player.getName());
-
-                        if(tournament != null) {
-                            item = TextUtil.setPlaceholders(item, player.getUniqueId(), tournament);
+                        if (tournament != null) {
+                            item = TextUtil.setPlaceholders(item, player, tournament);
+                        } else {
+                            item = TextUtil.setPlaceholders(item, player);
                         }
-                    }
 
-                    action.execute(plugin, player, item);
+                        action.execute(plugin, player, item);
+                    } else if (action.getIdentifier().equals("BROADCAST")) {
+                        if (tournament != null) {
+                            item = TextUtil.setPlaceholders(item, null, tournament);
+                        } else {
+                            item = TextUtil.setPlaceholders(item, null);
+                        }
+
+                        action.execute(plugin, player, item);
+                    } else if (item.contains("{PLAYER}")) {
+                        for(Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                            item = item.replace("{PLAYER}", onlinePlayer.getName());
+                            if (tournament != null) {
+                                item = TextUtil.setPlaceholders(item, onlinePlayer, tournament);
+                            } else {
+                                item = TextUtil.setPlaceholders(item, onlinePlayer);
+                            }
+
+                            action.execute(plugin, onlinePlayer, item);
+                        }
+                    } else {
+                        if (tournament != null) {
+                            item = TextUtil.setPlaceholders(item, null, tournament);
+                        } else {
+                            item = TextUtil.setPlaceholders(item, null);
+                        }
+
+                        action.execute(plugin, null, item);
+                    }
                 }
             }
         });

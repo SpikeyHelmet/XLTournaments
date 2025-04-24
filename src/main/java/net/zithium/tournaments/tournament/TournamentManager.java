@@ -197,12 +197,7 @@ public class TournamentManager {
             return;
         }
 
-        if (!objective.loadTournament(tournament, config)) {
-            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
-            return;
-        }
-
-        enableTournament(identifier, config, false);
+        enableTournament(identifier, config, true);
     }
 
     public Optional<Tournament> getTournament(String identifier) {
@@ -231,26 +226,22 @@ public class TournamentManager {
         return builder;
     }
 
-    public void enableTournament(String identifier, FileConfiguration config, boolean addParticipants)
-    {
+    public void enableTournament(String identifier, FileConfiguration config, boolean clearParticipants) {
         TournamentBuilder tournamentBuilder = getTournamentBuilder(identifier, config);
         Tournament tournament = tournamentBuilder.build();
         XLObjective objective = tournament.getObjective();
         Logger logger = plugin.getLogger();
 
+        plugin.getStorageManager().getStorageHandler().createTournamentTable(identifier);
         objective.addTournament(tournament);
         tournament.updateStatus();
-        tournament.start(false);
-
-        if(addParticipants){
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                tournament.addParticipant(player.getUniqueId(), 0, true);
-            }
+        tournament.start(clearParticipants);
+        if (!objective.loadTournament(tournament, config)) {
+            logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
         }
-
-        plugin.getStorageManager().getStorageHandler().createTournamentTable(identifier);
 
         tournaments.put(identifier, tournament);
         logger.info("Loaded '" + identifier + "' tournament.");
     }
 }
+
