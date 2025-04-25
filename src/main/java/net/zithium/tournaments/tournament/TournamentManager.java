@@ -117,10 +117,7 @@ public class TournamentManager {
         plugin.getLogger().info("Saving player data to database..");
 
         tournaments.values().forEach(tournament -> {
-            BukkitTask task = tournament.getUpdateTask();
-            if (task != null) {
-                task.cancel();
-            }
+            disableTournament(tournament);
         });
 
         StorageHandler handler = plugin.getStorageManager().getStorageHandler();
@@ -248,17 +245,24 @@ public class TournamentManager {
         logger.info("Loaded '" + identifier + "' tournament.");
     }
 
-    public void disableTournament(Tournament tournament) {
-        String identifier = tournament.getIdentifier();
-        XLObjective objective = tournament.getObjective();
+    public void disableTournament(Tournament tournament)
+    {
+        if(tournament.getTimeline().equals(Timeline.RANDOM)) {
+            if(tournament.getStatus().equals(TournamentStatus.ENDED)) {
+                plugin.getLogger().info("Tournament " + tournament.getIdentifier() + " is already ended.");
+                return;
+            }
 
-        BukkitTask task = tournament.getUpdateTask();
-        if (task != null) {
-            task.cancel();
+            XLObjective objective = tournament.getObjective();
+
+            BukkitTask task = tournament.getUpdateTask();
+            if (task != null) {
+                task.cancel();
+            }
+            objective.removeTournament(tournament);
+            tournament.stop();
+            tournament.setStatus(TournamentStatus.ENDED);
         }
-        objective.removeTournament(tournament);
-        tournament.stop();
-        tournament.setStatus(TournamentStatus.ENDED);
     }
 
     public void removeTournament(Tournament tournament) {
