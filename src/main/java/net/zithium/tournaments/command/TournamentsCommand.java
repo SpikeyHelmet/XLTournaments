@@ -187,7 +187,10 @@ public class TournamentsCommand extends CommandBase {
         if (optionalTournament.isPresent()) {
             Tournament tournament = optionalTournament.get();
 
-            plugin.getTournamentManager().disableTournament(tournament);
+            if (tournament.getTimeline().equals(Timeline.RANDOM)) {
+                plugin.getTournamentManager().disableTournament(tournament);
+                return;
+            }
 
             if (tournament.getStatus() == TournamentStatus.ENDED) {
                 Messages.ALREADY_STOPPED.send(sender);

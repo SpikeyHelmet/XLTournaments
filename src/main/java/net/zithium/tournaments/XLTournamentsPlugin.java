@@ -110,8 +110,9 @@ public final class XLTournamentsPlugin extends JavaPlugin implements XLTournamen
         setDebugMode();
 
         tournamentManager.onDisable(true);
-        tournamentManager.onEnable();
-
+        Bukkit.getScheduler().runTask(this, () -> {
+            tournamentManager.onEnable();
+        });
     }
 
     private void loadMetrics() {

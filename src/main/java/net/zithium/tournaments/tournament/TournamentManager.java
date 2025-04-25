@@ -115,19 +115,18 @@ public class TournamentManager {
         timerTask.cancel();
         Bukkit.getScheduler().cancelTasks(plugin);
         plugin.getLogger().info("Saving player data to database..");
+        StorageHandler handler = plugin.getStorageManager().getStorageHandler();
 
         tournaments.values().forEach(tournament -> {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                UUID uuid = player.getUniqueId();
+                handler.setPlayerScore(tournament.getIdentifier(), uuid.toString(), tournament.getScore(uuid));
+                if(!tournament.getTimeline().equals(Timeline.RANDOM)) {
+                    tournament.removeParticipant(uuid);
+                }
+            }
             disableTournament(tournament);
         });
-
-        StorageHandler handler = plugin.getStorageManager().getStorageHandler();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            UUID uuid = player.getUniqueId();
-            for (Tournament tournament : getTournaments(uuid)) {
-                handler.setPlayerScore(tournament.getIdentifier(), uuid.toString(), tournament.getScore(uuid));
-                tournament.removeParticipant(uuid);
-            }
-        }
 
         if (!reload) {
             plugin.getStorageManager().getStorageHandler().onDisable();
@@ -261,13 +260,13 @@ public class TournamentManager {
             }
             objective.removeTournament(tournament);
             tournament.stop();
-            tournament.setStatus(TournamentStatus.ENDED);
         }
     }
 
     public void removeTournament(Tournament tournament) {
         if(tournament.getTimeline().equals(Timeline.RANDOM)) {
             tournaments.remove(tournament.getIdentifier());
+            tournament.setStatus(TournamentStatus.ENDED);
             plugin.getLogger().info("unloaded '" + tournament.getIdentifier() + "' tournament.");
         }
     }
