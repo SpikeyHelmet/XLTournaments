@@ -126,7 +126,7 @@ public class TimeUtil {
         return time;
     }
 
-    public static ZonedDateTime getEndTime(Timeline timeline, ZoneId zoneId) {
+    public static ZonedDateTime getEndTime(Timeline timeline, ZoneId zoneId, long durationInSeconds) {
         ZonedDateTime time = ZonedDateTime.now(zoneId);
         switch (timeline) {
             case WEEKLY:
@@ -144,7 +144,7 @@ public class TimeUtil {
                 time = time.withMinute(59).withSecond(59).withNano(999999999);
                 break;
             case RANDOM:
-                time = time.plusMinutes(15L);
+                time = time.plusSeconds(durationInSeconds);
                 break;
         }
         return time;

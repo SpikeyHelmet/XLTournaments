@@ -114,6 +114,7 @@ public class TournamentBuilder {
 
         withStartActions(config.getStringList("start_actions"));
         withEndActions(config.getStringList("end_actions"));
+        withDurationInSeconds(config.getLong("duration", 300L));
 
         return this;
     }
@@ -200,6 +201,11 @@ public class TournamentBuilder {
 
     public TournamentBuilder withZoneId(ZoneId zoneId) {
         tournament.setZoneId(zoneId);
+        return this;
+    }
+
+    public TournamentBuilder withDurationInSeconds(long durationInSeconds) {
+        tournament.setDurationInSeconds(durationInSeconds);
         return this;
     }
 

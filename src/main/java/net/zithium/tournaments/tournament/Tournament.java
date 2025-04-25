@@ -39,6 +39,7 @@ public class Tournament {
     private TournamentStatus status;
     private ZonedDateTime startDate, endDate;
     private long startTimeMillis, endTimeMillis;
+    private long durationInSeconds;
     private ZoneId zoneId;
     private boolean updating;
     private XLObjective objective;
@@ -80,12 +81,13 @@ public class Tournament {
         this.startActions = new ArrayList<>();
         this.endActions = new ArrayList<>();
         this.meta = new HashMap<>();
+        this.durationInSeconds = 0L;
     }
 
     public void updateStatus() {
         if (timeline != Timeline.SPECIFIC) {
             startDate = TimeUtil.getStartTime(timeline, zoneId);
-            endDate = TimeUtil.getEndTime(timeline, zoneId);
+            endDate = TimeUtil.getEndTime(timeline, zoneId, durationInSeconds);
         }
 
         startTimeMillis = startDate.toInstant().toEpochMilli();
@@ -311,6 +313,10 @@ public class Tournament {
 
     void setZoneId(ZoneId zoneId) {
         this.zoneId = zoneId;
+    }
+
+    void setDurationInSeconds(long durationInSeconds) {
+        this.durationInSeconds = durationInSeconds;
     }
 
     // End of TournamentFactory methods //
