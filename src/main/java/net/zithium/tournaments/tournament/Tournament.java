@@ -123,7 +123,7 @@ public class Tournament {
         // If there are start actions defined, execute them for all online players.
         if (!startActions.isEmpty()) {
             if (debug()) plugin.getLogger().log(Level.INFO, "Executing start actions.");
-            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, startActions));
+            Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(null, startActions, this));
         }
 
         // Set the tournament status to ACTIVE.
@@ -181,7 +181,7 @@ public class Tournament {
                 OfflinePlayer player = getPlayerFromPosition(position);
                 if (player != null) {
                     if (player.isOnline()) {
-                        Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position)));
+                        Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position), this));
                         if (debug()) plugin.getLogger().log(Level.INFO, "Executed end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
                     } else {
                         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -420,7 +420,7 @@ public class Tournament {
                 Player player = Bukkit.getPlayer(uuid);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (rewards.containsKey(position)) {
-                        actionManager.executeActions(player, rewards.get(position));
+                        actionManager.executeActions(player, rewards.get(position), this);
                     }
 
                     Bukkit.getPluginManager().callEvent(new CompletedChallengeEvent(player, position, this));

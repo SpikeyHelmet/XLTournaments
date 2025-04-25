@@ -161,7 +161,7 @@ public class TournamentManager {
                     } else {
                         tournament.addParticipant(uuid, 0, true);
                     }
-                    Bukkit.getScheduler().runTask(plugin, () -> plugin.getActionManager().executeActions(player, tournament.getParticipationActions()));
+                    Bukkit.getScheduler().runTask(plugin, () -> plugin.getActionManager().executeActions(player, tournament.getParticipationActions(), tournament));
                 }
             }
         });
