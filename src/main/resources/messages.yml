@@ -31,7 +31,7 @@ tournament:
   ended: "{PREFIX} &cThis tournament has already ended."
   cleared: "{PREFIX} &7You have removed all users in the {TOURNAMENT} tournament."
   cleared_player: "{PREFIX} &7You have cleaned {PLAYER} from {TOURNAMENT}."
-  list: "{PREFIX} &7Enabled tournaments: &a{LIST}"
+  list: "{PREFIX} &7Enabled tournaments: &a{ENABLED} \n &aAll tournaments: &c{ALL}"
   stopped: "{PREFIX} &cYou have stopped the {TOURNAMENT} tournament."
   started: "{PREFIX} &aYou have started the {TOURNAMENT} tournament."
   already_stopped: "{PREFIX} &cThat tournament is not currently active."

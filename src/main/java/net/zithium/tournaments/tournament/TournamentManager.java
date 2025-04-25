@@ -186,7 +186,6 @@ public class TournamentManager {
 
         TournamentBuilder tournamentBuilder = getTournamentBuilder(identifier, config);
         Tournament tournament = tournamentBuilder.build();
-        XLObjective objective = tournament.getObjective();
         Logger logger = plugin.getLogger();
 
         Map<String, FileConfiguration> tournamentData = new LinkedHashMap<>();
@@ -213,6 +212,11 @@ public class TournamentManager {
         return allTournaments;
     }
 
+    public List<Tournament> getAllTournamentsList()
+    {
+        return allTournaments.keySet().stream().toList();
+    }
+
     public TournamentBuilder getTournamentBuilder(String identifier, FileConfiguration config)
     {
         TournamentBuilder builder = new TournamentBuilder(plugin, identifier);
@@ -233,15 +237,35 @@ public class TournamentManager {
         Logger logger = plugin.getLogger();
 
         plugin.getStorageManager().getStorageHandler().createTournamentTable(identifier);
-        objective.addTournament(tournament);
         tournament.updateStatus();
         tournament.start(clearParticipants);
         if (!objective.loadTournament(tournament, config)) {
             logger.severe("The objective (\" + obj + \") in file \" + identifier + \" did not load correctly. Skipping..");
         }
+        objective.addTournament(tournament);
 
         tournaments.put(identifier, tournament);
         logger.info("Loaded '" + identifier + "' tournament.");
+    }
+
+    public void disableTournament(Tournament tournament) {
+        String identifier = tournament.getIdentifier();
+        XLObjective objective = tournament.getObjective();
+
+        BukkitTask task = tournament.getUpdateTask();
+        if (task != null) {
+            task.cancel();
+        }
+        objective.removeTournament(tournament);
+        tournament.stop();
+        tournament.setStatus(TournamentStatus.ENDED);
+    }
+
+    public void removeTournament(Tournament tournament) {
+        if(tournament.getTimeline().equals(Timeline.RANDOM)) {
+            tournaments.remove(tournament.getIdentifier());
+            plugin.getLogger().info("unloaded '" + tournament.getIdentifier() + "' tournament.");
+        }
     }
 }
 

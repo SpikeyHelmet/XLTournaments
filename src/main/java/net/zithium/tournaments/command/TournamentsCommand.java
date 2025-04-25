@@ -172,7 +172,9 @@ public class TournamentsCommand extends CommandBase {
     @Permission({"tournaments.admin", "tournaments.command.list"})
     @WrongUsage("&c/tournament list")
     public void listSubCommand(final CommandSender sender) {
-        Messages.LIST_TOURNAMENTS.send(sender, "{LIST}", plugin.getTournamentManager().getTournaments().stream().map(Tournament::getIdentifier).collect(Collectors.joining(", ")));
+        Messages.LIST_TOURNAMENTS.send(sender,
+                "{ENABLED}", plugin.getTournamentManager().getTournaments().stream().map(Tournament::getIdentifier).collect(Collectors.joining(", ")),
+                "{ALL}", plugin.getTournamentManager().getAllTournamentsList().stream().map(Tournament::getIdentifier).collect(Collectors.joining(", ")));
     }
 
     @SubCommand("end")
@@ -184,6 +186,12 @@ public class TournamentsCommand extends CommandBase {
 
         if (optionalTournament.isPresent()) {
             Tournament tournament = optionalTournament.get();
+
+            if(tournament.getTimeline().equals(Timeline.RANDOM))
+            {
+                plugin.getTournamentManager().disableTournament(tournament);
+                return;
+            }
 
             if (tournament.getStatus() == TournamentStatus.ENDED) {
                 Messages.ALREADY_STOPPED.send(sender);

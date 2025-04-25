@@ -11,6 +11,7 @@ import net.zithium.tournaments.tournament.TournamentStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,6 +38,14 @@ public abstract class XLObjective implements Listener {
             listenerRegistered = true;
         }
         tournamentsLinked.put(tournament.getIdentifier(), tournament);
+    }
+
+    public void removeTournament(Tournament tournament) {
+        if(listenerRegistered) {
+            HandlerList.unregisterAll(this);
+            listenerRegistered = false;
+        }
+        tournamentsLinked.remove(tournament.getIdentifier(), tournament);
     }
 
     public boolean canExecute(Tournament tournament, Player player) {

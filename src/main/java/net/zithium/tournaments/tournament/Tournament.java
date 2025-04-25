@@ -171,6 +171,7 @@ public class Tournament {
                     if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
 
                     clearParticipants();
+                    plugin.getTournamentManager().removeTournament(this);
                 });
             }
         } else {
@@ -198,11 +199,13 @@ public class Tournament {
                 actionManager.executeActions(null, endActions, this);
                 if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
                 clearParticipants();
+                plugin.getTournamentManager().removeTournament(this);
             });
         }
         else {
             if (debug()) plugin.getLogger().log(Level.INFO, "Tournament has been stopped.");
             clearParticipants();
+            plugin.getTournamentManager().removeTournament(this);
         }
     }
 
