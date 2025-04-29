@@ -180,6 +180,10 @@ public class Tournament {
             for (int position : rewards.keySet()) {
                 OfflinePlayer player = getPlayerFromPosition(position);
                 if (player != null) {
+                    if(position == 1 && getScore(player.getUniqueId()) > 0)
+                    {
+                        storageHandler.addPlayerTournamentWins(player.getUniqueId().toString());
+                    }
                     if (player.isOnline()) {
                         Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position), this));
                         if (debug()) plugin.getLogger().log(Level.INFO, "Executed end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
@@ -420,6 +424,10 @@ public class Tournament {
                 Player player = Bukkit.getPlayer(uuid);
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (rewards.containsKey(position)) {
+                        if(position == 1 && getScore(uuid) > 0)
+                        {
+                            storageHandler.addPlayerTournamentWins(uuid.toString());
+                        }
                         actionManager.executeActions(player, rewards.get(position), this);
                     }
 

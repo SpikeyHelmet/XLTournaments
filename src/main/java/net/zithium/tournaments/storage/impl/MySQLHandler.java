@@ -62,6 +62,16 @@ public class MySQLHandler implements StorageHandler {
     }
 
     @Override
+    public void createTournamentWinsTable() {
+        try (Connection connection = hikari.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("CREATE TABLE IF NOT EXISTS tournament_wins (uuid varchar(255) NOT NULL, wins decimal);");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void addParticipant(String identifier, UUID uuid) {
         try (Connection connection = hikari.getConnection()) {
             connection.setAutoCommit(false); // Start transaction
@@ -234,7 +244,7 @@ public class MySQLHandler implements StorageHandler {
             try (PreparedStatement selectStmt = connection.prepareStatement(
                     "SELECT * FROM `" + identifier + "` WHERE uuid = ? FOR UPDATE")) {
                 selectStmt.setString(1, uuid);
-                ResultSet rs = selectStmt.executeQuery();
+                selectStmt.executeQuery();
 
                 try (PreparedStatement replaceStmt = connection.prepareStatement(
                         "REPLACE INTO `" + identifier + "` (uuid, score) VALUES (?, ?)")) {
@@ -253,5 +263,60 @@ public class MySQLHandler implements StorageHandler {
         }
     }
 
+    @Override
+    public void addPlayerTournamentWins(String uuid) {
+        int score = 0;
+        try (Connection connection = hikari.getConnection()) {
+            connection.setAutoCommit(false); // Start transaction
 
+            try (Statement statement = connection.createStatement()) {
+                statement.executeQuery("SELECT wins FROM 'tournament_wins' WHERE uuid='" + uuid + "';");
+                ResultSet rs = statement.getResultSet();
+
+                if(rs.next()) {
+                    score = rs.getInt("wins");
+                }
+                else {
+                    String sql = "INSERT INTO 'tournament_wins' (uuid, wins) VALUES('" + uuid + "','" + 0 + "');";
+                    Statement stmt = connection.createStatement();
+                    stmt.execute(sql);
+                }
+                rs.close();
+
+                //Update the win
+                String sql = "UPDATE 'tournament_wins' SET wins = " + (score + 1) + " WHERE uuid='" + uuid + "';";
+                Statement stmt = connection.createStatement();
+                stmt.execute(sql);
+
+                connection.commit(); // Commit transaction
+            }
+            catch (SQLException e) {
+                connection.rollback(); // Rollback on error
+                Bukkit.getServer().getLogger().severe("There was an error while attempting to set the player score. Rolling back.");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public int getPlayerTournamentWins(String uuid) {
+        try (Connection connection = hikari.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                statement.executeQuery("SELECT wins FROM 'tournament_wins' WHERE uuid='" + uuid + "';");
+                ResultSet rs = statement.getResultSet();
+
+                if(rs.next()) {
+                    return rs.getInt("wins");
+                }
+            }
+            catch (SQLException e) {
+                connection.rollback(); // Rollback on error
+                Bukkit.getServer().getLogger().severe("There was an error while attempting to set the player score. Rolling back.");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
 }

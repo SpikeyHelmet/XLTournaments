@@ -38,6 +38,12 @@ public interface StorageHandler {
     void createTournamentTable(String identifier);
 
     /**
+     * Create a tournament wins table
+     *
+     */
+    void createTournamentWinsTable();
+
+    /**
      * Add a participant
      *
      * @param identifier The ID of the tournament
@@ -126,5 +132,20 @@ public interface StorageHandler {
      * @param score The score
      */
     void setPlayerScore(String identifier, String uuid, int score);
+
+    /**
+     * Add +1 to the player win
+     *
+     * @param uuid The UUID of the player
+     */
+    void addPlayerTournamentWins(String uuid);
+
+    /**
+     * get how many wins player has
+     *
+     * @param uuid The UUID of the player
+     * @return Player wins
+     */
+    int getPlayerTournamentWins(String uuid);
 
 }

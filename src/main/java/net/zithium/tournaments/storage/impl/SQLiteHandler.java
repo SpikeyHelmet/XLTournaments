@@ -94,6 +94,18 @@ public class SQLiteHandler implements StorageHandler {
     }
 
     @Override
+    public void createTournamentWinsTable() {
+        try {
+            Connection connection = getConnection();
+            String sql = "CREATE TABLE IF NOT EXISTS tournament_wins (uuid varchar(255) NOT NULL, wins INTEGER);";
+            Statement stmt = connection.createStatement();
+            stmt.execute(sql);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
     public void addParticipant(String identifier, UUID uuid) {
         try {
             Connection connection = getConnection();
@@ -242,4 +254,44 @@ public class SQLiteHandler implements StorageHandler {
         }
     }
 
+    @Override
+    public void addPlayerTournamentWins(String uuid) {
+        int score = 0;
+        Connection connection = getConnection();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT wins FROM 'tournament_wins' WHERE uuid='" + uuid + "';");
+            if(rs.next()) {
+                score = rs.getInt("wins");
+            }
+            else {
+                String sql = "INSERT INTO 'tournament_wins' (uuid, wins) VALUES('" + uuid + "','" + 0 + "');";
+                Statement stmt = connection.createStatement();
+                stmt.execute(sql);
+            }
+
+            rs.close();
+
+            //Update the win
+            String sql = "UPDATE 'tournament_wins' SET wins = " + (score + 1) + " WHERE uuid='" + uuid + "';";
+            Statement stmt = connection.createStatement();
+            stmt.execute(sql);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public int getPlayerTournamentWins(String uuid) {
+        Connection connection = getConnection();
+        try {
+            ResultSet rs = connection.createStatement().executeQuery("SELECT wins FROM 'tournament_wins' WHERE uuid='" + uuid + "';");
+            if(rs.next()) {
+                return rs.getInt("wins");
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return 0;
+    }
 }

@@ -30,6 +30,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
     private static final Pattern END_MONTH_NUMBER_PATTERN = Pattern.compile("(\\w+)_END_MONTH_NUMBER");
     private static final Pattern START_DAY_PATTERN = Pattern.compile("(\\w+)_START_DAY");
     private static final Pattern END_DAY_PATTERN = Pattern.compile("(\\w+)_END_DAY");
+    private static final Pattern TOURNAMENT_WINS_PATTERN = Pattern.compile("TOURNAMENT_WINS");
 
     private final XLTournamentsPlugin plugin;
     private final TournamentManager tournamentManager;
@@ -193,6 +194,14 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
                 } else {
                     return "N/A";
                 }
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            final Matcher matcher = TOURNAMENT_WINS_PATTERN.matcher(identifier.toUpperCase());
+            if (matcher.find()) {
+                return String.valueOf(plugin.getStorageManager().getStorageHandler().getPlayerTournamentWins(String.valueOf(uuid)));
             }
         } catch (Exception ignored) {
         }

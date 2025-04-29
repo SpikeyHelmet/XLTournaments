@@ -49,6 +49,8 @@ public class TournamentManager {
         tournaments = new HashMap<>();
         allTournaments = new HashMap<>();
 
+        plugin.getStorageManager().getStorageHandler().createTournamentWinsTable();
+
         File dataFolder = plugin.getDataFolder();
         File directory = new File(dataFolder.getAbsolutePath() + File.separator + "tournaments");
 
