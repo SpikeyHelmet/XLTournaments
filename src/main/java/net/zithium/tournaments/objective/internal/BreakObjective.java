@@ -11,6 +11,7 @@ import net.zithium.tournaments.objective.hook.TEBlockExplode;
 import net.zithium.tournaments.tournament.Tournament;
 import net.zithium.tournaments.utility.universal.XBlock;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,6 +19,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
@@ -100,6 +103,29 @@ public class BreakObjective extends XLObjective {
 
             block.setMetadata("XLTPlacedBlock", new FixedMetadataValue(plugin, event.getPlayer().getName()));
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPistonExtend(BlockPistonExtendEvent event) {
+        for (Block block : event.getBlocks()) {
+            Location to = block.getLocation().add(event.getDirection().getDirection());
+            trackMovedBlock(to);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPistonRetract(BlockPistonRetractEvent event) {
+        for (Block block : event.getBlocks()) {
+            Location to = block.getLocation().add(event.getDirection().getOppositeFace().getDirection());
+            trackMovedBlock(to);
+        }
+    }
+
+    private void trackMovedBlock(Location movedTo) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Block newBlock = movedTo.getBlock();
+            newBlock.setMetadata("XLTPlacedBlock", new FixedMetadataValue(plugin, true));
+        }, 20L); // Delay by 20 tick to wait for the move to complete
     }
 
 }
