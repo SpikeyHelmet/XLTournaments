@@ -42,6 +42,11 @@ public class CraftTournament extends XLObjective {
 
         // Handle shift-click to calculate all items crafted in one go.
         if (event.isShiftClick()) {
+            if(player.getInventory().firstEmpty() == -1) {
+                // If the inventory is full, we can't shift-click.
+                return;
+            }
+
             // Estimate the maximum number of items crafted in one shift-click.
             int maxPossibleCrafts = calculateMaxCrafts(event);
             amount *= maxPossibleCrafts;
