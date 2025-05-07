@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
@@ -40,14 +41,7 @@ public class CraftTournament extends XLObjective {
 
         int amount = craftedItem.getAmount();
 
-        // Handle shift-click to calculate all items crafted in one go.
         if (event.isShiftClick()) {
-            if(player.getInventory().firstEmpty() == -1) {
-                // If the inventory is full, we can't shift-click.
-                return;
-            }
-
-            // Estimate the maximum number of items crafted in one shift-click.
             int maxPossibleCrafts = calculateMaxCrafts(event);
             amount *= maxPossibleCrafts;
         }
@@ -81,6 +75,23 @@ public class CraftTournament extends XLObjective {
             }
         }
 
-        return maxCrafts;
+        ItemStack result = event.getRecipe().getResult();
+        int maxStackSize = result.getMaxStackSize();
+
+        Player player = (Player) event.getWhoClicked();
+        Inventory inventory = player.getInventory();
+        int maxFits = 0;
+        int resultAmount = result.getAmount();
+
+        for (ItemStack item : inventory.getStorageContents()) {
+            if (item == null) {
+                maxFits += maxStackSize;
+            } else if (item.isSimilar(result)) {
+                maxFits += item.getMaxStackSize() - item.getAmount();
+            }
+        }
+
+        int maxByInventory = maxFits / resultAmount;
+        return Math.min(maxCrafts, maxByInventory);
     }
 }
