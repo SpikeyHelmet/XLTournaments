@@ -5,6 +5,7 @@
 
 package net.zithium.tournaments.objective.internal;
 
+import net.momirealms.customfishing.api.event.FishingResultEvent;
 import net.zithium.tournaments.objective.XLObjective;
 import net.zithium.tournaments.tournament.Tournament;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,6 +33,20 @@ public class PlayerFishObjective extends XLObjective {
         for(Tournament tournament : getTournaments()) {
             if(canExecute(tournament, player)) {
                 tournament.addScore(player.getUniqueId(), 1);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onCustomFishingResult(FishingResultEvent event) {
+        Player player = event.getPlayer();
+
+        if(event.getResult().equals(FishingResultEvent.Result.SUCCESS))
+        {
+            for(Tournament tournament : getTournaments()) {
+                if(canExecute(tournament, player)) {
+                    tournament.addScore(player.getUniqueId(), 1);
+                }
             }
         }
     }
