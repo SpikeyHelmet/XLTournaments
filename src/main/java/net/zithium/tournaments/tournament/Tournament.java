@@ -188,7 +188,7 @@ public class Tournament {
                         Bukkit.getScheduler().runTask(plugin, () -> actionManager.executeActions(player.getPlayer(), rewards.get(position), this));
                         if (debug()) plugin.getLogger().log(Level.INFO, "Executed end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
                     } else {
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                        Bukkit.getScheduler().runTask(plugin, () -> {
                             for (String action : rewards.get(position)) {
                                 storageHandler.addActionToQueue(player.getUniqueId().toString(), action);
                                 if (debug()) plugin.getLogger().log(Level.INFO, "Queued end actions for " + player.getName() + "(" + player.getUniqueId() + ")");
