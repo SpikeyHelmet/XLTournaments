@@ -91,7 +91,7 @@ public class TournamentGUI {
                         );
                         builder.withLore(TextUtil.setPlaceholders(
                                 config.getStringList(basePath + ".active.lore"),
-                                player.getUniqueId(),
+                                player,
                                 tournament
                         ));
                     } else if (status == TournamentStatus.WAITING) {
@@ -100,7 +100,7 @@ public class TournamentGUI {
                         );
                         builder.withLore(TextUtil.setPlaceholders(
                                 config.getStringList(basePath + ".waiting.lore"),
-                                player.getUniqueId(),
+                                player,
                                 tournament
                         ));
                     } else if (status == TournamentStatus.ENDED) {
@@ -109,7 +109,7 @@ public class TournamentGUI {
                         );
                         builder.withLore(TextUtil.setPlaceholders(
                                 config.getStringList(basePath + ".ended.lore"),
-                                player.getUniqueId(),
+                                player,
                                 tournament
                         ));
                     }
