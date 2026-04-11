@@ -59,6 +59,7 @@ dependencies {
     compileOnly 'com.github.NuVotifier:NuVotifier:2.7.2' // nuVotifier
     compileOnly 'io.lumine:Mythic-Dist:5.6.1' // MythicMobs
     compileOnly 'net.essentialsx:EssentialsX:2.20.1' // EssentialsX
+    compileOnly 'com.github.Slimefun:Slimefun4:RC-37' // Slimefun
     compileOnly fileTree(dir: 'libs', include: '*.jar') // libs folder.
     compileOnly("net.momirealms:custom-fishing:2.3.7")
 }

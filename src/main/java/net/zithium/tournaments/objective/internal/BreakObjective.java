@@ -7,6 +7,7 @@ package net.zithium.tournaments.objective.internal;
 
 import net.zithium.tournaments.XLTournamentsPlugin;
 import net.zithium.tournaments.objective.XLObjective;
+import net.zithium.tournaments.objective.hook.SlimefunBlockPlacerHook;
 import net.zithium.tournaments.objective.hook.TEBlockExplode;
 import net.zithium.tournaments.tournament.Tournament;
 import net.zithium.tournaments.utility.universal.XBlock;
@@ -18,10 +19,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,6 +30,7 @@ public class BreakObjective extends XLObjective {
 
     private final XLTournamentsPlugin plugin;
     private boolean excludePlaced;
+    private SlimefunBlockPlacerHook slimefunHook;
 
     public BreakObjective(@NotNull XLTournamentsPlugin plugin) {
         super("BLOCK_BREAK");
@@ -46,13 +45,29 @@ public class BreakObjective extends XLObjective {
             }
         }
 
+        // Exception handling for "Slimefun" plugin
+        if (plugin.getServer().getPluginManager().isPluginEnabled("Slimefun")) {
+            try {
+                slimefunHook = new SlimefunBlockPlacerHook(plugin, excludePlaced);
+                Bukkit.getServer().getPluginManager().registerEvents(slimefunHook, plugin);
+            } catch (Exception e) {
+                // Handle the exception
+                plugin.getLogger().warning("Failed to register Slimefun event.");
+            }
+        }
+
         this.plugin = plugin;
     }
+
 
     @Override
     public boolean loadTournament(Tournament tournament, @NotNull FileConfiguration config) {
         if (config.contains("exclude_placed_blocks")) {
             excludePlaced = config.getBoolean("exclude_placed_blocks");
+            // Update the hook with the new value
+            if (slimefunHook != null) {
+                slimefunHook.setExcludePlaced(excludePlaced);
+            }
         }
 
         if (config.contains("block_whitelist")) {
