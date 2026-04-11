@@ -45,8 +45,7 @@ public class CraftTournament extends XLObjective {
         int amount = 0;
 
         if (event.isShiftClick()) {
-            int maxPossibleCrafts = calculateMaxCrafts(event);
-            amount *= maxPossibleCrafts;
+            amount = calculateMaxCrafts(event);
         }
         else
         {
